@@ -105,11 +105,11 @@ random.seed(1)
 
 # Construct list of agents in the tournament
 agents = [
-    # aba.AlphaBetaAgent("aba", 4),
+    aba.AlphaBetaAgent("aba", 1),
     agent.RandomAgent("random1"),
     agent.RandomAgent("random2"),
     agent.RandomAgent("random3"),
-    agent.RandomAgent("random4")
+    #agent.RandomAgent("random4")
 ]
 
 # Run!

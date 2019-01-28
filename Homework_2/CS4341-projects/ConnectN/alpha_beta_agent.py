@@ -1,5 +1,7 @@
 import math
 import agent
+import board
+import heuristics
 
 ###########################
 # Alpha-Beta Search Agent #
@@ -17,8 +19,9 @@ class AlphaBetaAgent(agent.Agent):
         # Max search depth
         self.max_depth = max_depth
         self.cutoff = False
-        self.neg_inf = - 999999999
-        self.pos_inf = 9999999999
+        self.neg_inf = - 9999999999999
+        self.pos_inf = 999999999999
+        self.best_move_col = -1
 
     # Pick a column.
     #
@@ -29,6 +32,7 @@ class AlphaBetaAgent(agent.Agent):
     def go(self, brd):
         """Search for the best move (choice of column for the token)"""
         # Your code here
+        return self.alpha_beta_search(brd)
 
     # Get the successors of the given board.
     #
@@ -56,24 +60,33 @@ class AlphaBetaAgent(agent.Agent):
         return succ
 
     # Return an action
-    def alpha_beta_search(self, brd, depth):
-        column = 2
+    def alpha_beta_search(self, brd):
 
-        v = self.max_value(brd, self.neg_inf, self.pos_inf)
+        best_value = self.neg_inf
 
-        return column
+        for (state, col) in self.get_successors(brd):
+
+            v = self.max_value(state, col, self.neg_inf, self.pos_inf, 0)
+
+            if v > best_value:
+                best_value = v
+                #print("Best Score: " + str(best_value))
+                self.best_move_col = col
+
+        return self.best_move_col
 
     # Return max value
-    def max_value(self, brd, alpha, beta, depth):
+    def max_value(self, brd, action, alpha, beta, depth):
 
         if self.cutoff_test(brd, depth):
-            return self.evaluation()
+
+            return self.evaluation(brd, action)
 
         v = self.neg_inf
 
-        for (a, s) in self.get_successors(brd):
+        for (state, col) in self.get_successors(brd):
 
-            v = max(v, self.min_value(s, alpha, beta, depth + 1))
+            v = max(v, self.min_value(state, col, alpha, beta, depth + 1))
 
             if v >= beta:
 
@@ -84,15 +97,17 @@ class AlphaBetaAgent(agent.Agent):
         return v
 
     # Return min value
-    def min_value(self, brd, alpha, beta, depth):
+    def min_value(self, brd, action, alpha, beta, depth):
 
         if self.cutoff_test(brd, depth):
-            return self.evaluation()
+
+            return self.evaluation(brd, action)
 
         v = self.pos_inf
 
-        for (a, s) in self.get_successors(brd):
-            v = min(v, self.max_value(brd, alpha, beta, depth + 1))
+        for (state, col) in self.get_successors(brd):
+
+            v = min(v, self.max_value(state, col, alpha, beta, depth + 1))
 
             if v <= alpha:
 
@@ -104,11 +119,34 @@ class AlphaBetaAgent(agent.Agent):
 
     # Put in some logic here to determine if cutoff is reached
     def cutoff_test(self, brd, depth):
-        None
+        if depth > self.max_depth:
+            return True
+
+        if brd.get_outcome() is not 0:
+            # Terminal state, player won
+            return True
+
+        return False
+        # TODO: Put logic here to determine terminal state
 
     # Determine the value of the board state
-    def evaluation(self):
-        None
+    def evaluation(self, brd, col):
+        # TODO: Call heuristics function
+
+        if brd.player == 1:
+            player = 2
+        else:
+            player = 1
+
+        score = heuristics.calculate_total(brd, col, player)
+
+        # print("\n\nBOARD TEST: " + str(col) + " last move!")
+        # brd.print_it()
+        # print("THIS WAS THE SCORE: " + str(score))
+        # input()
+
+        return score
 
     # Resources Used:
     # 1. http://aima.cs.berkeley.edu/python/games.html
+    # 2. https://tonypoer.io/2016/10/28/implementing-minimax-and-alpha-beta-pruning-using-python/
