@@ -12,9 +12,9 @@ def calculate_total(brd, col, player):
     y = y - 1
     # Move is at col, y
 
-    #score += neighbor_score(brd, col, y, player)
+    score += neighbor_score(brd, col, y, player)
     score += center_score(brd, col, player)
-    #score += line_length(brd, col, y, player)
+    score += line_length(brd, col, y, player)
 
     return score
 

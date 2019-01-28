@@ -66,12 +66,15 @@ class AlphaBetaAgent(agent.Agent):
 
         for (state, col) in self.get_successors(brd):
 
-            v = self.max_value(state, col, self.neg_inf, self.pos_inf, 0)
+            returnArr = self.max_value(state, col, self.neg_inf, self.pos_inf, 0)
+
+            v = returnArr[0]
+            best_move = returnArr[1]
 
             if v > best_value:
                 best_value = v
                 #print("Best Score: " + str(best_value))
-                self.best_move_col = col
+                self.best_move_col = best_move
 
         return self.best_move_col
 
@@ -80,42 +83,55 @@ class AlphaBetaAgent(agent.Agent):
 
         if self.cutoff_test(brd, depth):
 
-            return self.evaluation(brd, action)
+            return [self.evaluation(brd, action), action]
 
-        v = self.neg_inf
-
+        bestVal = self.neg_inf
+        bestMove = None
         for (state, col) in self.get_successors(brd):
 
-            v = max(v, self.min_value(state, col, alpha, beta, depth + 1))
+            returnArr = self.min_value(state, col, alpha, beta, depth + 1)
+            v = returnArr[0]
+            move = returnArr[1]
 
-            if v >= beta:
+            if v > bestVal:
+                bestMove = move
+                bestVal = v
 
-                return v
+            if bestVal >= beta:
 
-            alpha = max(alpha, v)
+                return [bestVal, bestMove]
 
-        return v
+            alpha = max(alpha, bestVal)
+
+        return [bestVal, bestMove]
 
     # Return min value
     def min_value(self, brd, action, alpha, beta, depth):
 
         if self.cutoff_test(brd, depth):
 
-            return self.evaluation(brd, action)
+            return [self.evaluation(brd, action), action]
 
-        v = self.pos_inf
+        min_val = self.pos_inf
+        bestMove = None
 
         for (state, col) in self.get_successors(brd):
 
-            v = min(v, self.max_value(state, col, alpha, beta, depth + 1))
+            returnArr = self.max_value(state, col, alpha, beta, depth + 1)
+            v = returnArr[0]
+            move = returnArr[1]
 
-            if v <= alpha:
+            if v < min_val:
+                min_val = v
+                bestMove = move
 
-                return v
+            if min_val <= alpha:
 
-            beta = min(beta, v)
+                return [min_val, bestMove]
 
-        return v
+            beta = min(beta, min_val)
+
+        return [min_val, bestMove]
 
     # Put in some logic here to determine if cutoff is reached
     def cutoff_test(self, brd, depth):
